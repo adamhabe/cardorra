@@ -1,0 +1,1222 @@
+.adminLoginPage,
+.adminShell {
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+
+/* ==============================
+   LOGIN
+============================== */
+
+.adminLoginPage {
+  min-height: 100vh;
+
+  background:
+    #08090b;
+
+  color:
+    #f4f1e9;
+
+  display:
+    grid;
+
+  place-items:
+    center;
+
+  position:
+    relative;
+
+  overflow:
+    hidden;
+
+  padding:
+    30px;
+}
+
+
+.adminLoginGlow {
+  position:
+    absolute;
+
+  width:
+    500px;
+
+  height:
+    500px;
+
+  border-radius:
+    50%;
+
+  background:
+    #a7ff54;
+
+  opacity:
+    0.06;
+
+  filter:
+    blur(120px);
+}
+
+
+.adminLoginCard {
+  width:
+    min(
+      440px,
+      100%
+    );
+
+  position:
+    relative;
+
+  z-index:
+    2;
+
+  padding:
+    42px;
+
+  border:
+    1px solid
+    #25292e;
+
+  border-radius:
+    20px;
+
+  background:
+    #101216;
+
+  box-shadow:
+    0 40px 100px
+    rgba(
+      0,
+      0,
+      0,
+      .55
+    );
+}
+
+
+.adminBrand {
+  font-size:
+    20px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    -1px;
+
+  margin-bottom:
+    55px;
+}
+
+
+.adminBrand span,
+.adminSidebarBrand span {
+  color:
+    #a7ff54;
+
+  margin-left:
+    3px;
+}
+
+
+.adminLoginLabel,
+.adminEyebrow,
+.adminTopLabel {
+  color:
+    #a7ff54;
+
+  font-size:
+    9px;
+
+  letter-spacing:
+    2px;
+
+  font-weight:
+    900;
+}
+
+
+.adminLoginCard h1 {
+  font-size:
+    48px;
+
+  letter-spacing:
+    -3px;
+
+  margin:
+    10px 0 10px;
+
+  line-height:
+    1;
+}
+
+
+.adminLoginDescription {
+  color:
+    #707780;
+
+  font-size:
+    13px;
+
+  margin-bottom:
+    30px;
+}
+
+
+.adminLoginForm {
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    17px;
+}
+
+
+.adminLoginForm label {
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    7px;
+}
+
+
+.adminLoginForm label > span {
+  color:
+    #90969e;
+
+  font-size:
+    10px;
+
+  font-weight:
+    700;
+}
+
+
+.adminLoginForm input {
+  width:
+    100%;
+
+  background:
+    #171a1f;
+
+  border:
+    1px solid
+    #2c3138;
+
+  border-radius:
+    10px;
+
+  color:
+    white;
+
+  outline:
+    none;
+
+  padding:
+    14px 15px;
+
+  font-size:
+    14px;
+}
+
+
+.adminLoginForm input:focus {
+  border-color:
+    #a7ff54;
+}
+
+
+.adminLoginForm button {
+  margin-top:
+    8px;
+
+  background:
+    #a7ff54;
+
+  color:
+    #080908;
+
+  border:
+    0;
+
+  border-radius:
+    10px;
+
+  padding:
+    15px;
+
+  font-weight:
+    900;
+
+  cursor:
+    pointer;
+}
+
+
+.adminLoginSecurity {
+  margin-top:
+    20px;
+
+  color:
+    #575e66;
+
+  font-size:
+    10px;
+
+  text-align:
+    center;
+}
+
+
+.adminError {
+  background:
+    #281314;
+
+  border:
+    1px solid
+    #54282b;
+
+  color:
+    #ff9398;
+
+  border-radius:
+    9px;
+
+  padding:
+    11px;
+
+  margin-bottom:
+    18px;
+
+  font-size:
+    11px;
+}
+
+
+/* ==============================
+   ADMIN SHELL
+============================== */
+
+.adminShell {
+  min-height:
+    100vh;
+
+  background:
+    #090a0c;
+
+  color:
+    #f4f1e9;
+
+  display:
+    grid;
+
+  grid-template-columns:
+    245px 1fr;
+}
+
+
+.adminSidebar {
+  height:
+    100vh;
+
+  position:
+    sticky;
+
+  top:
+    0;
+
+  border-right:
+    1px solid
+    #202329;
+
+  background:
+    #0d0f12;
+
+  padding:
+    28px 20px;
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  justify-content:
+    space-between;
+}
+
+
+.adminSidebarBrand {
+  display:
+    inline-block;
+
+  color:
+    white;
+
+  font-size:
+    20px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    -1px;
+}
+
+
+.adminSidebarLabel {
+  margin-top:
+    9px;
+
+  color:
+    #4f555d;
+
+  font-size:
+    8px;
+
+  letter-spacing:
+    2px;
+}
+
+
+.adminMenu {
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    5px;
+
+  margin-top:
+    45px;
+
+  flex:
+    1;
+}
+
+
+.adminMenuItem {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    12px;
+
+  padding:
+    12px 13px;
+
+  border-radius:
+    9px;
+
+  color:
+    #737a83;
+
+  font-size:
+    12px;
+
+  font-weight:
+    700;
+}
+
+
+.adminMenuItem:hover {
+  background:
+    #15181c;
+
+  color:
+    white;
+}
+
+
+.adminMenuItem.active {
+  background:
+    #182012;
+
+  color:
+    #a7ff54;
+}
+
+
+.adminMenuItem span {
+  width:
+    18px;
+
+  text-align:
+    center;
+}
+
+
+.adminSidebarBottom {
+  border-top:
+    1px solid
+    #202329;
+
+  padding-top:
+    18px;
+}
+
+
+.adminAccount {
+  display:
+    grid;
+
+  grid-template-columns:
+    35px 1fr;
+
+  gap:
+    10px;
+
+  align-items:
+    center;
+
+  margin-bottom:
+    14px;
+}
+
+
+.adminAvatar {
+  width:
+    35px;
+
+  height:
+    35px;
+
+  border-radius:
+    9px;
+
+  display:
+    grid;
+
+  place-items:
+    center;
+
+  background:
+    #a7ff54;
+
+  color:
+    #080908;
+
+  font-size:
+    12px;
+
+  font-weight:
+    900;
+}
+
+
+.adminAccount > div:last-child {
+  min-width:
+    0;
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    3px;
+}
+
+
+.adminAccount strong {
+  font-size:
+    11px;
+}
+
+
+.adminAccount span {
+  overflow:
+    hidden;
+
+  white-space:
+    nowrap;
+
+  text-overflow:
+    ellipsis;
+
+  color:
+    #626971;
+
+  font-size:
+    8px;
+}
+
+
+.adminLogout {
+  width:
+    100%;
+
+  padding:
+    9px;
+
+  background:
+    transparent;
+
+  color:
+    #656c74;
+
+  border:
+    1px solid
+    #25292f;
+
+  border-radius:
+    8px;
+
+  cursor:
+    pointer;
+
+  font-size:
+    10px;
+}
+
+
+.adminLogout:hover {
+  color:
+    #ff8585;
+
+  border-color:
+    #5d3033;
+}
+
+
+/* ==============================
+   CONTENT
+============================== */
+
+.adminContent {
+  min-width:
+    0;
+}
+
+
+.adminTopbar {
+  height:
+    70px;
+
+  border-bottom:
+    1px solid
+    #202329;
+
+  padding:
+    0 35px;
+
+  display:
+    flex;
+
+  justify-content:
+    space-between;
+
+  align-items:
+    center;
+
+  background:
+    rgba(
+      9,
+      10,
+      12,
+      .9
+    );
+}
+
+
+.adminTopbar > div {
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    3px;
+}
+
+
+.adminTopbar strong {
+  font-size:
+    12px;
+}
+
+
+.adminOpenShop {
+  padding:
+    9px 12px;
+
+  border:
+    1px solid
+    #2c3036;
+
+  border-radius:
+    8px;
+
+  color:
+    #9aa0a8;
+
+  font-size:
+    10px;
+}
+
+
+.adminOpenShop:hover {
+  color:
+    white;
+
+  border-color:
+    #a7ff54;
+}
+
+
+.adminMain {
+  max-width:
+    1450px;
+
+  margin:
+    auto;
+
+  padding:
+    40px;
+}
+
+
+.adminPageHeader {
+  display:
+    flex;
+
+  justify-content:
+    space-between;
+
+  align-items:
+    end;
+
+  gap:
+    30px;
+
+  margin-bottom:
+    35px;
+}
+
+
+.adminPageHeader h1 {
+  font-size:
+    clamp(
+      38px,
+      5vw,
+      58px
+    );
+
+  letter-spacing:
+    -3px;
+
+  line-height:
+    1;
+
+  margin:
+    10px 0 10px;
+}
+
+
+.adminPageHeader p {
+  max-width:
+    520px;
+
+  color:
+    #707780;
+
+  font-size:
+    12px;
+
+  line-height:
+    1.6;
+
+  margin:
+    0;
+}
+
+
+.adminPrimaryButton {
+  white-space:
+    nowrap;
+
+  background:
+    #a7ff54;
+
+  color:
+    #080908;
+
+  border-radius:
+    9px;
+
+  padding:
+    12px 15px;
+
+  font-size:
+    11px;
+
+  font-weight:
+    900;
+}
+
+
+/* ==============================
+   STATS
+============================== */
+
+.adminStats {
+  display:
+    grid;
+
+  grid-template-columns:
+    repeat(
+      4,
+      1fr
+    );
+
+  gap:
+    13px;
+
+  margin-bottom:
+    25px;
+}
+
+
+.adminStatCard {
+  min-height:
+    150px;
+
+  background:
+    #111317;
+
+  border:
+    1px solid
+    #22262c;
+
+  border-radius:
+    14px;
+
+  padding:
+    20px;
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+}
+
+
+.adminStatCard > span {
+  color:
+    #676e76;
+
+  font-size:
+    8px;
+
+  letter-spacing:
+    1.5px;
+
+  font-weight:
+    800;
+}
+
+
+.adminStatCard > strong {
+  margin-top:
+    auto;
+
+  font-size:
+    38px;
+
+  letter-spacing:
+    -2px;
+}
+
+
+.adminStatCard small {
+  color:
+    #555c64;
+
+  font-size:
+    9px;
+
+  margin-top:
+    2px;
+}
+
+
+/* ==============================
+   DASHBOARD PANEL
+============================== */
+
+.adminDashboardPanel {
+  background:
+    #111317;
+
+  border:
+    1px solid
+    #22262c;
+
+  border-radius:
+    14px;
+
+  overflow:
+    hidden;
+}
+
+
+.adminPanelHeader {
+  padding:
+    22px 24px;
+
+  display:
+    flex;
+
+  justify-content:
+    space-between;
+
+  align-items:
+    center;
+
+  border-bottom:
+    1px solid
+    #22262c;
+}
+
+
+.adminPanelHeader span {
+  color:
+    #a7ff54;
+
+  font-size:
+    8px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    1.5px;
+}
+
+
+.adminPanelHeader h2 {
+  font-size:
+    24px;
+
+  margin:
+    5px 0 0;
+}
+
+
+.adminPanelHeader > a {
+  color:
+    #797f87;
+
+  font-size:
+    10px;
+}
+
+
+.adminPanelHeader > a:hover {
+  color:
+    #a7ff54;
+}
+
+
+.adminOrderTable {
+  width:
+    100%;
+}
+
+
+.adminOrderRow {
+  display:
+    grid;
+
+  grid-template-columns:
+    1fr
+    1.6fr
+    1fr
+    .7fr
+    .8fr;
+
+  gap:
+    18px;
+
+  align-items:
+    center;
+
+  padding:
+    16px 24px;
+
+  border-bottom:
+    1px solid
+    #1d2025;
+
+  font-size:
+    10px;
+
+  color:
+    #858c94;
+}
+
+
+.adminOrderRow:last-child {
+  border-bottom:
+    0;
+}
+
+
+.adminOrderRow > strong {
+  color:
+    #ddd;
+
+  font-size:
+    10px;
+}
+
+
+.adminOrderHead {
+  color:
+    #555c64;
+
+  background:
+    #0e1013;
+
+  font-size:
+    8px;
+
+  text-transform:
+    uppercase;
+
+  letter-spacing:
+    1px;
+}
+
+
+.adminCustomer {
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    3px;
+}
+
+
+.adminCustomer strong {
+  color:
+    #d8dce0;
+
+  font-size:
+    10px;
+}
+
+
+.adminCustomer span {
+  color:
+    #626971;
+
+  font-size:
+    8px;
+}
+
+
+.adminStatus {
+  width:
+    fit-content;
+
+  border:
+    1px solid
+    #344029;
+
+  background:
+    #161c12;
+
+  color:
+    #a7ff54;
+
+  border-radius:
+    30px;
+
+  padding:
+    5px 8px;
+
+  text-transform:
+    uppercase;
+
+  font-size:
+    7px;
+
+  letter-spacing:
+    1px;
+
+  font-weight:
+    900;
+}
+
+
+.adminEmptyState {
+  min-height:
+    220px;
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  gap:
+    7px;
+}
+
+
+.adminEmptyState strong {
+  font-size:
+    13px;
+}
+
+
+.adminEmptyState span {
+  color:
+    #606770;
+
+  font-size:
+    10px;
+}
+
+
+/* ==============================
+   MOBILE
+============================== */
+
+@media (
+  max-width: 900px
+) {
+
+  .adminShell {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .adminSidebar {
+    height:
+      auto;
+
+    position:
+      static;
+
+    border-right:
+      0;
+
+    border-bottom:
+      1px solid
+      #202329;
+  }
+
+
+  .adminMenu {
+    flex-direction:
+      row;
+
+    flex-wrap:
+      wrap;
+
+    margin:
+      20px 0;
+  }
+
+
+  .adminSidebarBottom {
+    display:
+      none;
+  }
+
+
+  .adminStats {
+    grid-template-columns:
+      repeat(
+        2,
+        1fr
+      );
+  }
+
+
+  .adminOrderRow {
+    grid-template-columns:
+      1fr
+      1fr;
+
+    gap:
+      10px;
+  }
+
+
+  .adminOrderHead {
+    display:
+      none;
+  }
+
+}
+
+
+@media (
+  max-width: 600px
+) {
+
+  .adminMain {
+    padding:
+      25px 18px;
+  }
+
+
+  .adminTopbar {
+    padding:
+      0 18px;
+  }
+
+
+  .adminStats {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .adminPageHeader {
+    flex-direction:
+      column;
+
+    align-items:
+      flex-start;
+  }
+
+
+  .adminLoginCard {
+    padding:
+      30px 24px;
+  }
+
+}

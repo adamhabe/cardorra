@@ -1,0 +1,144 @@
+.productImageManager {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+  padding: 18px;
+  border: 1px solid #292e34;
+  border-radius: 12px;
+  background: #15181c;
+}
+
+.productImagePreview {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 1px solid #2d3238;
+  border-radius: 11px;
+  background: #0e1013;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+.productImagePreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 12px;
+}
+
+.productImageEmpty {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  align-items: center;
+  justify-content: center;
+  color: #626a73;
+}
+
+.productImageEmpty span {
+  font-size: 54px;
+}
+
+.productImageEmpty strong {
+  font-size: 10px;
+}
+
+.productImageControls {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.productImageControls > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.productImageControls > div:first-child > strong {
+  font-size: 14px;
+  color: #f2f4f5;
+}
+
+.productImageControls p {
+  margin: 0;
+  font-size: 9px;
+  color: #626a73;
+}
+
+.productImageFileInput {
+  display: none;
+}
+
+.productImageButtons {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.productImageSelectButton,
+.productImageRemoveButton {
+  border-radius: 8px;
+  padding: 10px 13px;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.productImageSelectButton {
+  border: 1px solid #a7ff54;
+  background: #a7ff54;
+  color: #071006;
+}
+
+.productImageSelectButton:hover {
+  filter: brightness(1.08);
+}
+
+.productImageRemoveButton {
+  border: 1px solid #563034;
+  background: #211315;
+  color: #ff8d93;
+}
+
+.productImageRemoveButton:hover {
+  border-color: #8b444a;
+}
+
+.productImageChosen {
+  padding: 9px 11px;
+  border-radius: 7px;
+  border: 1px solid #293523;
+  background: #151d11;
+  color: #899783;
+  font-size: 9px;
+}
+
+.productImageChosen strong {
+  color: #a7ff54;
+}
+
+.productImageUploadNote {
+  color: #505861;
+  font-size: 8px;
+}
+
+.productSaveButton:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+
+@media (max-width: 750px) {
+
+  .productImageManager {
+    grid-template-columns: 1fr;
+  }
+
+  .productImagePreview {
+    max-width: 320px;
+  }
+
+}
