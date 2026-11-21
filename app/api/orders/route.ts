@@ -11,12 +11,10 @@ import {
   createCustomerServerClient,
 } from "../../../lib/supabase/customer-server";
 
-
 type IncomingOrderItem = {
   slug: string;
   quantity: number;
 };
-
 
 type OrderRequest = {
   customer: {
@@ -40,7 +38,6 @@ type OrderRequest = {
   items: IncomingOrderItem[];
 };
 
-
 function cleanText(
   value: unknown,
   maxLength: number
@@ -49,21 +46,26 @@ function cleanText(
     return "";
   }
 
-  return value.trim().slice(
-    0,
-    maxLength
-  );
+  return value.trim().slice(0, maxLength);
 }
 
-
-function isValidEmail(
-  email: string
-) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-    email
-  );
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function isValidCzechPhone(phone: string) {
+  const digits = phone.replace(/\D/g, "");
+
+  if (digits.startsWith("00420") && digits.length === 14) {
+    return true;
+  }
+
+  if (digits.startsWith("420") && digits.length === 12) {
+    return true;
+  }
+
+  return digits.length === 9;
+}
 
 export async function POST(
   request: Request
@@ -107,7 +109,6 @@ export async function POST(
       }
     );
 
-
     /*
       ==========================
       REQUEST
@@ -116,7 +117,6 @@ export async function POST(
 
     const body: OrderRequest =
       await request.json();
-
 
     /*
       ==========================
@@ -182,6 +182,17 @@ export async function POST(
       );
     }
 
+    if (!isValidCzechPhone(customerPhone)) {
+      return NextResponse.json(
+        {
+          error:
+            "Telefonní číslo musí obsahovat přesně 9 číslic. Použij české číslo, případně předvolbu +420.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
 
     /*
       ==========================
@@ -189,13 +200,9 @@ export async function POST(
       ==========================
     */
 
-    const shippingPrices: Record<
-      string,
-      number
-    > = {
+    const shippingPrices: Record<string, number> = {
       pickup: 79,
       address: 109,
-      personal: 0,
     };
 
     if (
@@ -215,11 +222,8 @@ export async function POST(
       );
     }
 
-    const shipping =
-      body.shipping;
-
-    const shippingPrice =
-      shippingPrices[shipping];
+    const shipping = body.shipping;
+    const shippingPrice = shippingPrices[shipping];
 
     if (
       shipping === "address" &&
@@ -245,7 +249,6 @@ export async function POST(
       body.shippingPoint?.name,
       300
     );
-
 
     /*
       ==========================
@@ -290,7 +293,6 @@ export async function POST(
       );
     }
 
-
     /*
       ==========================
       POLOŽKY
@@ -324,15 +326,13 @@ export async function POST(
       );
     }
 
-
     /*
       ==========================
       SLOUČENÍ DUPLICIT
       ==========================
     */
 
-    const requestedItems =
-      new Map<string, number>();
+    const requestedItems = new Map<string, number>();
 
     for (const item of body.items) {
       if (
@@ -352,8 +352,7 @@ export async function POST(
         );
       }
 
-      const slug =
-        item.slug.trim();
+      const slug = item.slug.trim();
 
       if (!slug) {
         return NextResponse.json(
@@ -367,11 +366,8 @@ export async function POST(
         );
       }
 
-      const previous =
-        requestedItems.get(slug) || 0;
-
-      const quantity =
-        previous + item.quantity;
+      const previous = requestedItems.get(slug) || 0;
+      const quantity = previous + item.quantity;
 
       if (!Number.isSafeInteger(quantity)) {
         return NextResponse.json(
@@ -385,12 +381,8 @@ export async function POST(
         );
       }
 
-      requestedItems.set(
-        slug,
-        quantity
-      );
+      requestedItems.set(slug, quantity);
     }
-
 
     /*
       ==========================
@@ -398,27 +390,18 @@ export async function POST(
       ==========================
     */
 
-    const requestedSlugs =
-      Array.from(
-        requestedItems.keys()
-      );
+    const requestedSlugs = Array.from(
+      requestedItems.keys()
+    );
 
     const {
       data: databaseProducts,
       error: productsError,
     } = await supabase
       .from("products")
-      .select(
-        "slug, name, price, active"
-      )
-      .in(
-        "slug",
-        requestedSlugs
-      )
-      .eq(
-        "active",
-        true
-      );
+      .select("slug, name, price, active")
+      .in("slug", requestedSlugs)
+      .eq("active", true);
 
     if (productsError) {
       console.error(
@@ -446,15 +429,10 @@ export async function POST(
 
     let productsPrice = 0;
 
-    for (
-      const [slug, quantity]
-      of requestedItems
-    ) {
-      const product =
-        databaseProducts?.find(
-          (item) =>
-            item.slug === slug
-        );
+    for (const [slug, quantity] of requestedItems) {
+      const product = databaseProducts?.find(
+        (item) => item.slug === slug
+      );
 
       if (!product) {
         return NextResponse.json(
@@ -468,8 +446,7 @@ export async function POST(
         );
       }
 
-      const price =
-        Number(product.price);
+      const price = Number(product.price);
 
       if (
         !Number.isSafeInteger(price) ||
@@ -486,8 +463,7 @@ export async function POST(
         );
       }
 
-      productsPrice +=
-        price * quantity;
+      productsPrice += price * quantity;
 
       verifiedItems.push({
         slug: product.slug,
@@ -497,8 +473,7 @@ export async function POST(
       });
     }
 
-    const finalPrice =
-      productsPrice + shippingPrice;
+    const finalPrice = productsPrice + shippingPrice;
 
     if (
       !Number.isSafeInteger(finalPrice) ||
@@ -514,7 +489,6 @@ export async function POST(
         }
       );
     }
-
 
     /*
       ==========================
@@ -532,9 +506,7 @@ export async function POST(
       .slice(0, 8)
       .toUpperCase();
 
-    const orderNumber =
-      `TCG-${today}-${random}`;
-
+    const orderNumber = `TCG-${today}-${random}`;
 
     /*
       ==========================
@@ -548,17 +520,10 @@ export async function POST(
     } = await supabase.rpc(
       "create_order_with_stock_v2",
       {
-        p_order_number:
-          orderNumber,
-
-        p_customer_name:
-          customerName,
-
-        p_customer_email:
-          customerEmail,
-
-        p_customer_phone:
-          customerPhone,
+        p_order_number: orderNumber,
+        p_customer_name: customerName,
+        p_customer_email: customerEmail,
+        p_customer_phone: customerPhone,
 
         p_street:
           shipping === "address"
@@ -575,8 +540,7 @@ export async function POST(
             ? zip
             : "",
 
-        p_shipping_method:
-          shipping,
+        p_shipping_method: shipping,
 
         p_shipping_point_id:
           shipping === "pickup"
@@ -588,23 +552,13 @@ export async function POST(
             ? shippingPointName
             : "",
 
-        p_payment_method:
-          "cod",
-
-        p_products_price:
-          productsPrice,
-
-        p_shipping_price:
-          shippingPrice,
-
-        p_total_price:
-          finalPrice,
-
-        p_items:
-          verifiedItems,
+        p_payment_method: "cod",
+        p_products_price: productsPrice,
+        p_shipping_price: shippingPrice,
+        p_total_price: finalPrice,
+        p_items: verifiedItems,
       }
     );
-
 
     if (error) {
       console.error(
@@ -613,9 +567,7 @@ export async function POST(
       );
 
       if (
-        error.message.includes(
-          "OUT_OF_STOCK:"
-        )
+        error.message.includes("OUT_OF_STOCK:")
       ) {
         return NextResponse.json(
           {
@@ -639,11 +591,9 @@ export async function POST(
       );
     }
 
-
-    const result =
-      Array.isArray(data)
-        ? data[0]
-        : data;
+    const result = Array.isArray(data)
+      ? data[0]
+      : data;
 
     if (
       !result ||
@@ -659,7 +609,6 @@ export async function POST(
         }
       );
     }
-
 
     /*
       ==========================
@@ -687,17 +636,10 @@ export async function POST(
         } = await supabase
           .from("orders")
           .update({
-            customer_user_id:
-              user.id,
+            customer_user_id: user.id,
           })
-          .eq(
-            "order_number",
-            result.order_number
-          )
-          .is(
-            "customer_user_id",
-            null
-          );
+          .eq("order_number", result.order_number)
+          .is("customer_user_id", null);
 
         if (linkError) {
           console.error(
@@ -721,7 +663,6 @@ export async function POST(
       );
     }
 
-
     /*
       ==========================
       SOUKROMÝ ODKAZ NA OBJEDNÁVKU
@@ -733,13 +674,8 @@ export async function POST(
       error: tokenError,
     } = await supabase
       .from("orders")
-      .select(
-        "customer_token"
-      )
-      .eq(
-        "order_number",
-        result.order_number
-      )
+      .select("customer_token")
+      .eq("order_number", result.order_number)
       .maybeSingle();
 
     if (tokenError) {
@@ -748,7 +684,6 @@ export async function POST(
         tokenError
       );
     }
-
 
     /*
       ==========================
@@ -759,20 +694,10 @@ export async function POST(
     return NextResponse.json(
       {
         success: true,
-
-        orderNumber:
-          result.order_number,
-
-        orderToken:
-          createdOrder?.customer_token ||
-          null,
-
-        paymentMethod:
-          "cod",
-
-        paymentStatus:
-          "pending",
-
+        orderNumber: result.order_number,
+        orderToken: createdOrder?.customer_token || null,
+        paymentMethod: "cod",
+        paymentStatus: "pending",
         productsPrice,
         shippingPrice,
         finalPrice,
@@ -781,7 +706,6 @@ export async function POST(
         status: 200,
       }
     );
-
   } catch (error) {
     console.error(
       "ORDER API CRASH:",

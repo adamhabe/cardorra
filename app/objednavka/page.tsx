@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -5,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import {
   FormEvent,
+  useEffect,
   useState,
 } from "react";
 
@@ -12,59 +14,73 @@ import {
   useCart,
 } from "../components/CartProvider";
 
+function isValidCzechPhone(value: string) {
+  const digits = value.replace(/\D/g, "");
+
+  if (digits.startsWith("00420") && digits.length === 14) {
+    return true;
+  }
+
+  if (digits.startsWith("420") && digits.length === 12) {
+    return true;
+  }
+
+  return digits.length === 9;
+}
 
 export default function CheckoutPage() {
-
-  const router =
-    useRouter();
-
+  const router = useRouter();
 
   const {
     items,
     totalPrice,
     clearCart,
     cartLoaded,
-  } =
-    useCart();
+  } = useCart();
 
+  const [shipping, setShipping] = useState("pickup");
+  const [payment, setPayment] = useState("cod");
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
+  // Údaje zákazníka – přihlášenému se předvyplní.
+  const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
 
-  const [
-    shipping,
-    setShipping,
-  ] =
-    useState(
-      "pickup"
-    );
+  useEffect(() => {
+    let cancelled = false;
 
+    async function loadCustomerProfile() {
+      try {
+        const response = await fetch("/api/customer/profile", {
+          cache: "no-store",
+        });
 
-  const [
-    payment,
-    setPayment,
-  ] =
-    useState(
-      "cod"
-    );
+        if (!response.ok) return;
 
+        const result = await response.json();
 
-  const [
-    submitting,
-    setSubmitting,
-  ] =
-    useState(
-      false
-    );
+        if (cancelled || !result.profile) return;
 
+        const profile = result.profile;
 
-  const [
-    errorMessage,
-    setErrorMessage,
-  ] =
-    useState(
-      ""
-    );
+        setCustomerName(
+          `${profile.firstName ?? ""} ${profile.lastName ?? ""}`.trim()
+        );
+        setCustomerEmail(profile.email ?? "");
+        setCustomerPhone(profile.phone ?? "");
+      } catch (error) {
+        console.error("CHECKOUT PROFILE LOAD ERROR:", error);
+      }
+    }
 
+    loadCustomerProfile();
 
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   /*
     ==========================
@@ -73,15 +89,11 @@ export default function CheckoutPage() {
   */
 
   const shippingPrice =
-    shipping ===
-    "pickup"
+    shipping === "pickup"
       ? 79
-      : shipping ===
-        "address"
-      ? 109
-      : 0;
-
-
+      : shipping === "address"
+        ? 109
+        : 0;
 
   /*
     ==========================
@@ -89,28 +101,14 @@ export default function CheckoutPage() {
     ==========================
   */
 
-  const finalPrice =
-    totalPrice +
-    shippingPrice;
+  const finalPrice = totalPrice + shippingPrice;
 
-
-
-  function formatPrice(
-    price: number
-  ) {
-
+  function formatPrice(price: number) {
     return (
-      new Intl.NumberFormat(
-        "cs-CZ"
-      ).format(
-        price
-      ) +
+      new Intl.NumberFormat("cs-CZ").format(price) +
       " Kč"
     );
-
   }
-
-
 
   /*
     ==========================
@@ -119,39 +117,28 @@ export default function CheckoutPage() {
   */
 
   async function handleSubmit(
-    event:
-      FormEvent<HTMLFormElement>
+    event: FormEvent<HTMLFormElement>
   ) {
-
     event.preventDefault();
 
-
-    if (
-      items.length === 0 ||
-      submitting
-    ) {
-
+    if (items.length === 0 || submitting) {
       return;
-
     }
 
+    setSubmitting(true);
+    setErrorMessage("");
 
-    setSubmitting(
-      true
-    );
+    const form = new FormData(event.currentTarget);
 
+    const phoneInput = String(form.get("phone") || "").trim();
 
-    setErrorMessage(
-      ""
-    );
-
-
-    const form =
-      new FormData(
-        event.currentTarget
+    if (!isValidCzechPhone(phoneInput)) {
+      setErrorMessage(
+        "Telefonní číslo musí obsahovat přesně 9 číslic. Můžeš použít i předvolbu +420."
       );
-
-
+      setSubmitting(false);
+      return;
+    }
 
     /*
       ==========================
@@ -160,61 +147,25 @@ export default function CheckoutPage() {
     */
 
     const customer = {
-
-      name:
-        String(
-          form.get(
-            "name"
-          ) || ""
-        ),
-
-      email:
-        String(
-          form.get(
-            "email"
-          ) || ""
-        ),
-
-      phone:
-        String(
-          form.get(
-            "phone"
-          ) || ""
-        ),
+      name: String(form.get("name") || "").trim(),
+      email: String(form.get("email") || "").trim(),
+      phone: phoneInput,
 
       street:
-        shipping ===
-        "address"
-          ? String(
-              form.get(
-                "street"
-              ) || ""
-            )
+        shipping === "address"
+          ? String(form.get("street") || "").trim()
           : "",
 
       city:
-        shipping ===
-        "address"
-          ? String(
-              form.get(
-                "city"
-              ) || ""
-            )
+        shipping === "address"
+          ? String(form.get("city") || "").trim()
           : "",
 
       zip:
-        shipping ===
-        "address"
-          ? String(
-              form.get(
-                "zip"
-              ) || ""
-            )
+        shipping === "address"
+          ? String(form.get("zip") || "").trim()
           : "",
-
     };
-
-
 
     /*
       ==========================
@@ -223,14 +174,9 @@ export default function CheckoutPage() {
     */
 
     const shippingPoint = {
-
       id: "",
-
       name: "",
-
     };
-
-
 
     /*
       ==========================
@@ -239,81 +185,36 @@ export default function CheckoutPage() {
     */
 
     const payload = {
-
       customer,
-
       shipping,
-
       shippingPoint,
-
       payment,
-
       items,
-
-      productsPrice:
-        totalPrice,
-
+      productsPrice: totalPrice,
       shippingPrice,
-
       finalPrice,
-
     };
 
-
-
     try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-      const response =
-        await fetch(
-          "/api/orders",
-          {
+      const result = await response.json();
 
-            method:
-              "POST",
-
-            headers: {
-
-              "Content-Type":
-                "application/json",
-
-            },
-
-            body:
-              JSON.stringify(
-                payload
-              ),
-
-          }
-        );
-
-
-
-      const result =
-        await response
-          .json();
-
-
-
-      if (
-        !response.ok
-      ) {
-
+      if (!response.ok) {
         setErrorMessage(
           result.error ||
-          "Objednávku se nepodařilo odeslat."
+            "Objednávku se nepodařilo odeslat."
         );
 
-
-        setSubmitting(
-          false
-        );
-
-
+        setSubmitting(false);
         return;
-
       }
-
-
 
       /*
         ==========================
@@ -323,34 +224,15 @@ export default function CheckoutPage() {
 
       localStorage.setItem(
         "last-order",
-
         JSON.stringify({
-
           ...payload,
-
-          orderNumber:
-            result.orderNumber,
-
-          orderToken:
-            result.orderToken ||
-            null,
-
-          paymentMethod:
-            result.paymentMethod ||
-            payment,
-
-          paymentStatus:
-            result.paymentStatus ||
-            "pending",
-
-          createdAt:
-            new Date()
-              .toISOString(),
-
+          orderNumber: result.orderNumber,
+          orderToken: result.orderToken || null,
+          paymentMethod: result.paymentMethod || payment,
+          paymentStatus: result.paymentStatus || "pending",
+          createdAt: new Date().toISOString(),
         })
       );
-
-
 
       /*
         ==========================
@@ -360,69 +242,35 @@ export default function CheckoutPage() {
 
       clearCart();
 
-
-
       /*
         ==========================
         PŘESMĚROVÁNÍ
         ==========================
-
-        Pokud server vrátil
-        customer token, zákazník
-        rovnou přejde na svoji
-        bezpečnou stránku objednávky.
       */
 
-      if (
-        result.orderToken
-      ) {
-
+      if (result.orderToken) {
         router.push(
           `/objednavka/moje/${encodeURIComponent(
             result.orderToken
           )}?created=1`
         );
-
       } else {
-
-        /*
-          Fallback kdyby token
-          z nějakého důvodu nebyl.
-        */
-
         router.push(
           `/objednavka/hotovo?order=${encodeURIComponent(
             result.orderNumber
           )}`
         );
-
       }
-
-
-    } catch (
-      error
-    ) {
-
-      console.error(
-        "CHECKOUT ERROR:",
-        error
-      );
-
+    } catch (error) {
+      console.error("CHECKOUT ERROR:", error);
 
       setErrorMessage(
         "Nepodařilo se spojit se serverem."
       );
 
-
-      setSubmitting(
-        false
-      );
-
+      setSubmitting(false);
     }
-
   }
-
-
 
   /*
     ==========================
@@ -430,31 +278,18 @@ export default function CheckoutPage() {
     ==========================
   */
 
-  if (
-    !cartLoaded
-  ) {
-
+  if (!cartLoaded) {
     return (
       <main>
-
         <nav className="nav">
-
           <div className="navLeft">
-
-            <Link
-              href="/"
-              className="logo"
-            >
+            <Link href="/" className="logo">
               TCG<span>VAULT</span>
             </Link>
-
           </div>
-
         </nav>
 
-
         <section className="checkoutEmpty">
-
           <div className="eyebrow">
             CHECKOUT
           </div>
@@ -462,15 +297,10 @@ export default function CheckoutPage() {
           <h1>
             Načítám objednávku...
           </h1>
-
         </section>
-
       </main>
     );
-
   }
-
-
 
   /*
     ==========================
@@ -478,29 +308,17 @@ export default function CheckoutPage() {
     ==========================
   */
 
-  if (
-    items.length === 0
-  ) {
-
+  if (items.length === 0) {
     return (
       <main>
-
         <nav className="nav">
-
           <div className="navLeft">
-
-            <Link
-              href="/"
-              className="logo"
-            >
+            <Link href="/" className="logo">
               TCG<span>VAULT</span>
             </Link>
-
           </div>
 
-
           <div className="navLinks">
-
             <Link href="/">
               Domů
             </Link>
@@ -508,14 +326,10 @@ export default function CheckoutPage() {
             <Link href="/pokemon">
               Pokémon
             </Link>
-
           </div>
-
         </nav>
 
-
         <section className="checkoutEmpty">
-
           <div className="eyebrow">
             OBJEDNÁVKA
           </div>
@@ -535,37 +349,25 @@ export default function CheckoutPage() {
           >
             Prohlédnout produkty
           </Link>
-
         </section>
-
       </main>
     );
-
   }
-
-
 
   return (
     <main>
-
-
       {/* =========================
           NAVIGACE
       ========================== */}
 
       <nav className="nav">
-
         <div className="navLeft">
-
-
           <div className="menuWrap">
-
             <input
               id="menu-toggle"
               type="checkbox"
               className="menuToggle"
             />
-
 
             <label
               htmlFor="menu-toggle"
@@ -576,13 +378,10 @@ export default function CheckoutPage() {
               <span></span>
             </label>
 
-
             <div className="menuPanel">
-
               <div className="menuTitle">
                 MENU
               </div>
-
 
               <Link
                 href="/pokemon"
@@ -592,7 +391,6 @@ export default function CheckoutPage() {
                 <span>→</span>
               </Link>
 
-
               <Link
                 href="/darkove-poukazy"
                 className="menuItem"
@@ -600,11 +398,8 @@ export default function CheckoutPage() {
                 Dárkové poukazy
                 <span>→</span>
               </Link>
-
             </div>
-
           </div>
-
 
           <Link
             href="/"
@@ -612,12 +407,9 @@ export default function CheckoutPage() {
           >
             TCG<span>VAULT</span>
           </Link>
-
         </div>
 
-
         <div className="navLinks">
-
           <Link href="/">
             Domů
           </Link>
@@ -625,22 +417,15 @@ export default function CheckoutPage() {
           <Link href="/kosik">
             ← Zpět do košíku
           </Link>
-
         </div>
-
       </nav>
-
-
 
       {/* =========================
           CHECKOUT
       ========================== */}
 
       <section className="checkoutPage">
-
-
         <div className="checkoutHeader">
-
           <div className="eyebrow">
             CHECKOUT
           </div>
@@ -653,29 +438,18 @@ export default function CheckoutPage() {
             Už jen pár údajů
             a objednávka je připravená.
           </p>
-
         </div>
-
-
 
         <form
           className="checkoutLayout"
-          onSubmit={
-            handleSubmit
-          }
+          onSubmit={handleSubmit}
         >
-
-
           <div className="checkoutForms">
-
-
-
             {/* =====================
                 01 KONTAKT
             ===================== */}
 
             <section className="checkoutBox">
-
               <div className="checkoutBoxNumber">
                 01
               </div>
@@ -684,12 +458,8 @@ export default function CheckoutPage() {
                 Kontaktní údaje
               </h2>
 
-
               <div className="formGrid">
-
-
                 <div className="formField formFull">
-
                   <label htmlFor="name">
                     Jméno a příjmení
                   </label>
@@ -699,15 +469,17 @@ export default function CheckoutPage() {
                     name="name"
                     type="text"
                     placeholder="Jan Novák"
+                    autoComplete="name"
+                    value={customerName}
+                    onChange={(event) =>
+                      setCustomerName(event.target.value)
+                    }
+                    maxLength={120}
                     required
                   />
-
                 </div>
 
-
-
                 <div className="formField">
-
                   <label htmlFor="email">
                     E-mail
                   </label>
@@ -717,15 +489,17 @@ export default function CheckoutPage() {
                     name="email"
                     type="email"
                     placeholder="jan@email.cz"
+                    autoComplete="email"
+                    value={customerEmail}
+                    onChange={(event) =>
+                      setCustomerEmail(event.target.value)
+                    }
+                    maxLength={200}
                     required
                   />
-
                 </div>
 
-
-
                 <div className="formField">
-
                   <label htmlFor="phone">
                     Telefon
                   </label>
@@ -734,25 +508,25 @@ export default function CheckoutPage() {
                     id="phone"
                     name="phone"
                     type="tel"
-                    placeholder="+420 123 456 789"
+                    placeholder="+420 604 447 840"
+                    autoComplete="tel"
+                    inputMode="tel"
+                    value={customerPhone}
+                    onChange={(event) =>
+                      setCustomerPhone(event.target.value)
+                    }
+                    maxLength={20}
                     required
                   />
-
                 </div>
-
-
               </div>
-
             </section>
-
-
 
             {/* =====================
                 02 DOPRAVA
             ===================== */}
 
             <section className="checkoutBox">
-
               <div className="checkoutBoxNumber">
                 02
               </div>
@@ -761,37 +535,23 @@ export default function CheckoutPage() {
                 Doprava
               </h2>
 
-
               <div className="shippingOptions">
-
-
-
                 <label
                   className={
-                    shipping ===
-                    "pickup"
+                    shipping === "pickup"
                       ? "shippingOption selected"
                       : "shippingOption"
                   }
                 >
-
                   <input
                     type="radio"
                     name="shipping"
                     value="pickup"
-                    checked={
-                      shipping ===
-                      "pickup"
-                    }
-                    onChange={() =>
-                      setShipping(
-                        "pickup"
-                      )
-                    }
+                    checked={shipping === "pickup"}
+                    onChange={() => setShipping("pickup")}
                   />
 
                   <div>
-
                     <strong>
                       Výdejní místo
                     </strong>
@@ -799,43 +559,29 @@ export default function CheckoutPage() {
                     <span>
                       Zásilkovna / Packeta
                     </span>
-
                   </div>
 
                   <b>
                     79 Kč
                   </b>
-
                 </label>
-
-
 
                 <label
                   className={
-                    shipping ===
-                    "address"
+                    shipping === "address"
                       ? "shippingOption selected"
                       : "shippingOption"
                   }
                 >
-
                   <input
                     type="radio"
                     name="shipping"
                     value="address"
-                    checked={
-                      shipping ===
-                      "address"
-                    }
-                    onChange={() =>
-                      setShipping(
-                        "address"
-                      )
-                    }
+                    checked={shipping === "address"}
+                    onChange={() => setShipping("address")}
                   />
 
                   <div>
-
                     <strong>
                       Doručení na adresu
                     </strong>
@@ -843,75 +589,21 @@ export default function CheckoutPage() {
                     <span>
                       Kurýr na tvoji adresu
                     </span>
-
                   </div>
 
                   <b>
                     109 Kč
                   </b>
-
                 </label>
-
-
-
-                <label
-                  className={
-                    shipping ===
-                    "personal"
-                      ? "shippingOption selected"
-                      : "shippingOption"
-                  }
-                >
-
-                  <input
-                    type="radio"
-                    name="shipping"
-                    value="personal"
-                    checked={
-                      shipping ===
-                      "personal"
-                    }
-                    onChange={() =>
-                      setShipping(
-                        "personal"
-                      )
-                    }
-                  />
-
-                  <div>
-
-                    <strong>
-                      Osobní předání
-                    </strong>
-
-                    <span>
-                      Po předchozí domluvě
-                    </span>
-
-                  </div>
-
-                  <b>
-                    Zdarma
-                  </b>
-
-                </label>
-
-
               </div>
-
             </section>
-
-
 
             {/* =====================
                 03 PACKETA
             ===================== */}
 
-            {shipping ===
-              "pickup" && (
-
+            {shipping === "pickup" && (
               <section className="checkoutBox">
-
                 <div className="checkoutBoxNumber">
                   03
                 </div>
@@ -920,22 +612,17 @@ export default function CheckoutPage() {
                   Výdejní místo
                 </h2>
 
-
                 <div
                   className="shippingOption selected"
                   style={{
-                    cursor:
-                      "default",
+                    cursor: "default",
                   }}
                 >
-
                   <div
                     style={{
-                      gridColumn:
-                        "1 / -1",
+                      gridColumn: "1 / -1",
                     }}
                   >
-
                     <strong>
                       📦 Zásilkovna / Packeta
                     </strong>
@@ -944,26 +631,17 @@ export default function CheckoutPage() {
                       Výběr konkrétního výdejního
                       místa napojíme později.
                     </span>
-
                   </div>
-
                 </div>
-
               </section>
-
             )}
-
-
 
             {/* =====================
                 03 ADRESA
             ===================== */}
 
-            {shipping ===
-              "address" && (
-
+            {shipping === "address" && (
               <section className="checkoutBox">
-
                 <div className="checkoutBoxNumber">
                   03
                 </div>
@@ -972,12 +650,8 @@ export default function CheckoutPage() {
                   Doručovací adresa
                 </h2>
 
-
                 <div className="formGrid">
-
-
                   <div className="formField formFull">
-
                     <label htmlFor="street">
                       Ulice a číslo
                     </label>
@@ -987,15 +661,12 @@ export default function CheckoutPage() {
                       name="street"
                       type="text"
                       placeholder="Karetní 123"
+                      autoComplete="street-address"
                       required
                     />
-
                   </div>
 
-
-
                   <div className="formField">
-
                     <label htmlFor="city">
                       Město
                     </label>
@@ -1005,15 +676,12 @@ export default function CheckoutPage() {
                       name="city"
                       type="text"
                       placeholder="Plzeň"
+                      autoComplete="address-level2"
                       required
                     />
-
                   </div>
 
-
-
                   <div className="formField">
-
                     <label htmlFor="zip">
                       PSČ
                     </label>
@@ -1023,56 +691,35 @@ export default function CheckoutPage() {
                       name="zip"
                       type="text"
                       placeholder="301 00"
+                      autoComplete="postal-code"
                       required
                     />
-
                   </div>
-
-
                 </div>
-
               </section>
-
             )}
 
-
-
             {/* =====================
-                PLATBA
+                04 PLATBA
             ===================== */}
 
             <section className="checkoutBox">
-
               <div className="checkoutBoxNumber">
-
-                {shipping ===
-                "personal"
-                  ? "03"
-                  : "04"}
-
+                04
               </div>
-
 
               <h2>
                 Platba
               </h2>
 
-
               <div className="shippingOptions">
-
-
-
-                {/* KARTA */}
-
                 <div className="shippingOption disabledOption">
-
                   <input
                     type="radio"
                     disabled
                   />
 
                   <div>
-
                     <strong>
                       Platba kartou online
                     </strong>
@@ -1080,45 +727,29 @@ export default function CheckoutPage() {
                     <span>
                       Visa • Mastercard • Apple Pay • Google Pay
                     </span>
-
                   </div>
 
                   <b>
                     Připravujeme
                   </b>
-
                 </div>
-
-
-
-                {/* DOBÍRKA */}
 
                 <label
                   className={
-                    payment ===
-                    "cod"
+                    payment === "cod"
                       ? "shippingOption selected"
                       : "shippingOption"
                   }
                 >
-
                   <input
                     type="radio"
                     name="payment"
                     value="cod"
-                    checked={
-                      payment ===
-                      "cod"
-                    }
-                    onChange={() =>
-                      setPayment(
-                        "cod"
-                      )
-                    }
+                    checked={payment === "cod"}
+                    onChange={() => setPayment("cod")}
                   />
 
                   <div>
-
                     <strong>
                       Dobírka
                     </strong>
@@ -1126,51 +757,33 @@ export default function CheckoutPage() {
                     <span>
                       Zaplatíš při převzetí zásilky
                     </span>
-
                   </div>
 
                   <b>
                     Zdarma
                   </b>
-
                 </label>
-
-
               </div>
-
 
               <p
                 style={{
-                  margin:
-                    "14px 0 0",
-
-                  color:
-                    "#666",
-
-                  fontSize:
-                    "11px",
-
-                  lineHeight:
-                    "1.6",
+                  margin: "14px 0 0",
+                  color: "#666",
+                  fontSize: "11px",
+                  lineHeight: "1.6",
                 }}
               >
                 Online platby kartou budou dostupné
                 po spuštění platební brány Comgate.
               </p>
-
             </section>
-
-
           </div>
-
-
 
           {/* =========================
               SOUHRN
           ========================== */}
 
           <aside className="checkoutSummary">
-
             <div className="eyebrow">
               TVOJE OBJEDNÁVKA
             </div>
@@ -1179,110 +792,63 @@ export default function CheckoutPage() {
               Souhrn
             </h2>
 
-
-
             <div className="checkoutProducts">
-
-              {items.map(
-                (item) => (
-
-                  <div
-                    className="checkoutProduct"
-                    key={
-                      item.slug
-                    }
-                  >
-
-                    <div className="checkoutProductImage">
-
-                      {item.image ? (
-
-                        <img
-                          src={
-                            item.image
-                          }
-                          alt={
-                            item.name
-                          }
-                        />
-
-                      ) : (
-
-                        <span>
-                          {item.emoji}
-                        </span>
-
-                      )}
-
-                    </div>
-
-
-                    <div>
-
-                      <strong>
-                        {item.name}
-                      </strong>
-
+              {items.map((item) => (
+                <div
+                  className="checkoutProduct"
+                  key={item.slug}
+                >
+                  <div className="checkoutProductImage">
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                      />
+                    ) : (
                       <span>
-                        {item.quantity}×{" "}
-                        {formatPrice(
-                          item.price
-                        )}
+                        {item.emoji}
                       </span>
-
-                    </div>
-
+                    )}
                   </div>
 
-                )
-              )}
+                  <div>
+                    <strong>
+                      {item.name}
+                    </strong>
 
+                    <span>
+                      {item.quantity}×{" "}
+                      {formatPrice(item.price)}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
 
-
-
             <div className="checkoutTotals">
-
-
               <div>
-
                 <span>
                   Produkty
                 </span>
 
                 <strong>
-                  {formatPrice(
-                    totalPrice
-                  )}
+                  {formatPrice(totalPrice)}
                 </strong>
-
               </div>
 
-
-
               <div>
-
                 <span>
                   Doprava
                 </span>
 
                 <strong>
-
-                  {shippingPrice ===
-                  0
+                  {shippingPrice === 0
                     ? "Zdarma"
-                    : formatPrice(
-                        shippingPrice
-                      )}
-
+                    : formatPrice(shippingPrice)}
                 </strong>
-
               </div>
 
-
-
               <div>
-
                 <span>
                   Platba
                 </span>
@@ -1290,32 +856,20 @@ export default function CheckoutPage() {
                 <strong>
                   Dobírka
                 </strong>
-
               </div>
-
-
             </div>
 
-
-
             <div className="checkoutFinal">
-
               <span>
                 Celkem
               </span>
 
               <strong>
-                {formatPrice(
-                  finalPrice
-                )}
+                {formatPrice(finalPrice)}
               </strong>
-
             </div>
 
-
-
             <label className="termsCheck">
-
               <input
                 type="checkbox"
                 required
@@ -1325,76 +879,40 @@ export default function CheckoutPage() {
                 Souhlasím s obchodními
                 podmínkami.
               </span>
-
             </label>
 
-
-
             {errorMessage && (
-
               <div
                 style={{
-                  marginBottom:
-                    "14px",
-
-                  padding:
-                    "12px",
-
-                  borderRadius:
-                    "8px",
-
-                  background:
-                    "#2a1212",
-
-                  color:
-                    "#ff8585",
-
-                  fontSize:
-                    "12px",
+                  marginBottom: "14px",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  background: "#2a1212",
+                  color: "#ff8585",
+                  fontSize: "12px",
                 }}
               >
-
                 {errorMessage}
-
               </div>
-
             )}
-
-
 
             <button
               type="submit"
               className="placeOrderButton"
-              disabled={
-                submitting
-              }
+              disabled={submitting}
             >
-
               {submitting
                 ? "Odesílám..."
                 : "Objednat na dobírku →"}
-
             </button>
 
-
-
             <p className="testCheckoutNote">
-
               Objednávka se po odeslání
               uloží do systému.
-
             </p>
-
-
           </aside>
-
-
         </form>
-
-
       </section>
-
-
     </main>
   );
 }
